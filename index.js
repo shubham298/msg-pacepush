@@ -4,6 +4,7 @@ var bodyparser = require('body-parser')
 const mongoose = require('mongoose');
 const port = process.env.PORT || 8000;
 const app = express()
+app.use(express.static(__dirname));
 const routes = require('./routes/api')
 const db = "mongodb+srv://shubham:78784512@clusterpush-w5itz.mongodb.net/test?retryWrites=true&w=majority"
 //Database connection
