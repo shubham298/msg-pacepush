@@ -1,8 +1,9 @@
 const express = require('express')
 const router = express.Router();
 var OneSignal = require('onesignal-node');
-var myClient = require('../config.js')
+var client = require('../config.js')
 const Add = require('../models/segment')
+const Messages = require('../models/message')
 
 router.get('/', (req, res) => res.send('Hello World!'))
 //@type     POST
@@ -11,7 +12,9 @@ router.get('/', (req, res) => res.send('Hello World!'))
 //@access   PUBLIC
 router.post('/message', function (req, res) {
     //it save() and creates req.body
-    res.send(req.body);
+
+
+    
     // we need to create a notification to send      
     var firstNotification = new OneSignal.Notification({
         contents: {
@@ -19,21 +22,32 @@ router.post('/message', function (req, res) {
             tr: "Test mesajı"
         }
     });
-
+    var segment=''
     // set target users
     if (req.body.user == 1) {
-        firstNotification.postBody["excluded_segments"] = ["Banned Users"];
+        segment='Active User'
+        firstNotification.postBody["excluded_segments"] = ["Banned Users", "Inactive Users"];
         firstNotification.postBody["included_segments"] = ["Active Users"];
     }
-    else {
+    else if(req.body.user==2)
+    {
+        segment='Banned User'
         firstNotification.postBody["included_segments"] = ["Banned Users"];
-        firstNotification.postBody["excluded_segments"] = ["Active Users"];
+        firstNotification.postBody["excluded_segments"] = ["Active Users","Inactive Users"];
     }
-
+    else 
+    {
+        segment='Inactive User'
+        firstNotification.postBody["included_segments"] = ["Inactive Users"];
+        firstNotification.postBody["excluded_segments"] = ["Active Users","Banned Users"];
+    }
 
     // set notification parameters      
     firstNotification.postBody["data"] = { "abc": "123", "foo": "bar" };
-
+    var myDateString = Date();
+    Messages.create({message:req.body.messages,segment:segment,time:myDateString}).then(function(record){
+        res.send(record);
+    })
 
     client.sendNotification(firstNotification)
         .then(function (response) {
@@ -103,9 +117,11 @@ router.post('/messagesegment', function (req, res, next) {
                 filterarr.push(fillarr, opp);
         }
 
+       
+        var myDateString = Date();
+    Messages.create({message:req.body.messages,segment:req.body.name,time:myDateString}).then(function(record){
         res.send(record);
-        console.log(filterarr)
-
+    })
         var firstNotification = new OneSignal.Notification({
             contents: {
                 en: req.body.messages,
@@ -178,13 +194,56 @@ router.post('/location', function (req, res, next) {
     });
 
 
-    myClient.sendNotification(firstNotification)
+    client.sendNotification(firstNotification)
         .then(function (response) {
             console.log(response.data, response.httpResponse.statusCode);
         })
         .catch(function (err) {
             console.log('Something went wrong...', err);
         });
+})
+
+
+//@type     DELETE
+//@route    /api/deletesegment
+//@desc     delete the segment
+//@access   PUBLIC
+router.delete('/deletesegment', function(req,res,next){
+    Add.findOneAndRemove({name: req.body.name}).then(function(record,err){
+        if(record)
+        res.status(200).send({record,message:"DELETED THE SEGMENT SUCESSFULLY"});
+        else
+            res.status(400).send({message:"NO SUCH SEGMENT FOUND"})
+    })
+
+})
+
+//@type     GET
+//@route    /api/viewsegment 
+//@desc     view all the list of segment
+//@access   PUBLIC
+router.get('/viewsegment', function(req,res,next){
+    Add.find().then(function(record,err){
+        if(record)
+            res.send(record);
+        else
+            res.send({message:"NO SUCH SEGMENT FOUND"})
+    })
+
+})
+
+//@type     GET
+//@route    /api/messagedetails
+//@desc     view all the messages sent
+//@access   PUBLIC
+
+router.get('/messagedetails', function(req,res,next){
+    Messages.find().then(function(record,err){
+        if(record)
+            res.send(record);
+        else
+            res.send({message:"NO SUCH SEGMENT FOUND"})
+    })
 })
 
 module.exports = router;
