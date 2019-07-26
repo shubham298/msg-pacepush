@@ -208,7 +208,7 @@ router.post('/location', function (req, res, next) {
 //@route    /api/deletesegment
 //@desc     delete the segment
 //@access   PUBLIC
-router.delete('/deletesegment', function(req,res,next){
+router.post('/deletesegment', function(req,res,next){
     Add.findOneAndRemove({name: req.body.name}).then(function(record,err){
         if(record)
         res.status(200).send({record,message:"DELETED THE SEGMENT SUCESSFULLY"});
