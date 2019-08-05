@@ -4,6 +4,7 @@ var OneSignal = require('onesignal-node');
 var client = require('../config.js')
 const Add = require('../models/segment')
 const Messages = require('../models/message')
+const Country = require('../models/country')
 let moment = require("moment-timezone");
 var schedule = require('node-schedule');
 router.get('/', (req, res) => res.send('Hello World!'))
@@ -315,4 +316,33 @@ router.post('/time', function (req, res, next) {
 
 })
 
+//@type     GET
+//@route    /api/countrydetails
+//@desc     view all the country to send the messages
+//@access   PUBLIC
+
+router.get('/countrydetails', function (req, res, next) {
+    Country.find().then(function (record, err) {
+        if (record)
+            res.send(record);
+
+        else
+            res.send({ message: "NO SUCH country FOUND" })
+    })
+})
+
+//@type     POST
+//@route    /api/addCountry
+//@desc     route for submitting question
+//@access   PRIVATE
+router.post("/addCountry",
+    (req, res) => {
+        const newCountry = new Country({
+            country: req.body.country,
+        })
+        newCountry
+            .save()
+            .then(question => res.json(question))
+            .catch(err => console.log("unable to push question into the database " + err));
+    })
 module.exports = router;
