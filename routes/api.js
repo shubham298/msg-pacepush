@@ -1,8 +1,12 @@
 const express = require('express')
 const router = express.Router();
 var OneSignal = require('onesignal-node');
-var myClient = require('../config.js')
+var client = require('../config.js')
 const Add = require('../models/segment')
+var ct = require('countries-and-timezones');
+//let moment = require("moment");
+var schedule = require('node-schedule');
+let moment = require("moment-timezone");
 
 router.get('/', (req, res) => res.send('Hello World!'))
 //@type     POST
@@ -185,6 +189,77 @@ router.post('/location', function (req, res, next) {
         .catch(function (err) {
             console.log('Something went wrong...', err);
         });
+})
+
+//@type     POST
+//@route    /api/time
+//@desc     just for testing
+//@access   PUBLIC
+router.post('/time', function (req, res, next) {
+    var region = req.body.region
+    var datetime = req.body.datetime
+    //*************** */time is 0 to 12 am and 12 to 24 pm *****************
+    var country = moment.tz(datetime, "YYYY-M-D H:m", region);
+    var countryTime = country.format("LLL");
+    var india = country.clone().tz("Asia/Kolkata");
+    var triggerTime = india.format("LLL")
+    var date = india.format('l');
+    //Time splitting
+    var time = india.format('LT')
+    //Parsing time array 
+    var timearr = time.split(" ")//time array
+    if (timearr[1] == "AM") {
+        var dn = 0;
+    } else {
+        dn = 1;
+    }
+    //Breaking time array
+    var exact = timearr[0].split(":")
+    var h = parseInt(exact[0], 10)
+    var m = parseInt(exact[1], 10)
+
+    //Parsing date array
+    var datarr = date.split("/")
+    var month = parseInt(datarr[0], 10);
+    var day = parseInt(datarr[1], 10);
+    var yy = parseInt(datarr[2], 10);
+
+    if (timearr[1] == "PM" && h < 12 && dn == 1) {
+        h += 12;
+        console.log(h)
+    }
+
+
+    var data = { india, countryTime, triggerTime, yy, month, day, h, m, dn }
+    res.send(data);
+
+    //year ,month,day,hour,minute,second
+    var date = new Date(yy, month - 1, day, h, m, dn);
+
+    var j = schedule.scheduleJob(date, function () {
+        console.log('The world is going to end today.');
+
+        var firstNotification = new OneSignal.Notification({
+            contents: {
+                en: req.body.message,
+                tr: "Test mesajı"
+            },
+
+
+        });
+        firstNotification.postBody["excluded_segments"] = ["Banned Users"];
+        firstNotification.postBody["included_segments"] = ["Active Users"];
+
+        client.sendNotification(firstNotification)
+            .then(function (response) {
+                console.log(response.data, response.httpResponse.statusCode);
+            })
+            .catch(function (err) {
+                console.log('Something went wrong...', err);
+            });
+    });
+
+
 })
 
 module.exports = router;
