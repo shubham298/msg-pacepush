@@ -3,10 +3,7 @@ const router = express.Router();
 var OneSignal = require('onesignal-node');
 var client = require('../config.js')
 const Add = require('../models/segment')
-var ct = require('countries-and-timezones');
-//let moment = require("moment");
-var schedule = require('node-schedule');
-let moment = require("moment-timezone");
+const Messages = require('../models/message')
 
 router.get('/', (req, res) => res.send('Hello World!'))
 //@type     POST
@@ -15,7 +12,9 @@ router.get('/', (req, res) => res.send('Hello World!'))
 //@access   PUBLIC
 router.post('/message', function (req, res) {
     //it save() and creates req.body
-    res.send(req.body);
+
+
+    
     // we need to create a notification to send      
     var firstNotification = new OneSignal.Notification({
         contents: {
@@ -23,21 +22,32 @@ router.post('/message', function (req, res) {
             tr: "Test mesajı"
         }
     });
-
+    var segment=''
     // set target users
     if (req.body.user == 1) {
-        firstNotification.postBody["excluded_segments"] = ["Banned Users"];
+        segment='Active User'
+        firstNotification.postBody["excluded_segments"] = ["Banned Users", "Inactive Users"];
         firstNotification.postBody["included_segments"] = ["Active Users"];
     }
-    else {
+    else if(req.body.user==2)
+    {
+        segment='Banned User'
         firstNotification.postBody["included_segments"] = ["Banned Users"];
-        firstNotification.postBody["excluded_segments"] = ["Active Users"];
+        firstNotification.postBody["excluded_segments"] = ["Active Users","Inactive Users"];
     }
-
+    else 
+    {
+        segment='Inactive User'
+        firstNotification.postBody["included_segments"] = ["Inactive Users"];
+        firstNotification.postBody["excluded_segments"] = ["Active Users","Banned Users"];
+    }
 
     // set notification parameters      
     firstNotification.postBody["data"] = { "abc": "123", "foo": "bar" };
-
+    var myDateString = Date();
+    Messages.create({message:req.body.messages,segment:segment,time:myDateString}).then(function(record){
+        res.send(record);
+    })
 
     client.sendNotification(firstNotification)
         .then(function (response) {
@@ -107,9 +117,11 @@ router.post('/messagesegment', function (req, res, next) {
                 filterarr.push(fillarr, opp);
         }
 
+       
+        var myDateString = Date();
+    Messages.create({message:req.body.messages,segment:req.body.name,time:myDateString}).then(function(record){
         res.send(record);
-        console.log(filterarr)
-
+    })
         var firstNotification = new OneSignal.Notification({
             contents: {
                 en: req.body.messages,
@@ -182,7 +194,7 @@ router.post('/location', function (req, res, next) {
     });
 
 
-    myClient.sendNotification(firstNotification)
+    client.sendNotification(firstNotification)
         .then(function (response) {
             console.log(response.data, response.httpResponse.statusCode);
         })
@@ -191,75 +203,47 @@ router.post('/location', function (req, res, next) {
         });
 })
 
-//@type     POST
-//@route    /api/time
-//@desc     just for testing
+
+//@type     DELETE
+//@route    /api/deletesegment
+//@desc     delete the segment
 //@access   PUBLIC
-router.post('/time', function (req, res, next) {
-    var region = req.body.region
-    var datetime = req.body.datetime
-    //*************** */time is 0 to 12 am and 12 to 24 pm *****************
-    var country = moment.tz(datetime, "YYYY-M-D H:m", region);
-    var countryTime = country.format("LLL");
-    var india = country.clone().tz("Asia/Kolkata");
-    var triggerTime = india.format("LLL")
-    var date = india.format('l');
-    //Time splitting
-    var time = india.format('LT')
-    //Parsing time array 
-    var timearr = time.split(" ")//time array
-    if (timearr[1] == "AM") {
-        var dn = 0;
-    } else {
-        dn = 1;
-    }
-    //Breaking time array
-    var exact = timearr[0].split(":")
-    var h = parseInt(exact[0], 10)
-    var m = parseInt(exact[1], 10)
+router.post('/deletesegment', function(req,res,next){
+    Add.findOneAndRemove({name: req.body.name}).then(function(record,err){
+        if(record)
+        res.status(200).send({record,message:"DELETED THE SEGMENT SUCESSFULLY"});
+        else
+            res.status(400).send({message:"NO SUCH SEGMENT FOUND"})
+    })
 
-    //Parsing date array
-    var datarr = date.split("/")
-    var month = parseInt(datarr[0], 10);
-    var day = parseInt(datarr[1], 10);
-    var yy = parseInt(datarr[2], 10);
+})
 
-    if (timearr[1] == "PM" && h < 12 && dn == 1) {
-        h += 12;
-        console.log(h)
-    }
+//@type     GET
+//@route    /api/viewsegment 
+//@desc     view all the list of segment
+//@access   PUBLIC
+router.get('/viewsegment', function(req,res,next){
+    Add.find().then(function(record,err){
+        if(record)
+            res.send(record);
+        else
+            res.send({message:"NO SUCH SEGMENT FOUND"})
+    })
 
+})
 
-    var data = { india, countryTime, triggerTime, yy, month, day, h, m, dn }
-    res.send(data);
+//@type     GET
+//@route    /api/messagedetails
+//@desc     view all the messages sent
+//@access   PUBLIC
 
-    //year ,month,day,hour,minute,second
-    var date = new Date(yy, month - 1, day, h, m, dn);
-
-    var j = schedule.scheduleJob(date, function () {
-        console.log('The world is going to end today.');
-
-        var firstNotification = new OneSignal.Notification({
-            contents: {
-                en: req.body.message,
-                tr: "Test mesajı"
-            },
-
-
-        });
-        firstNotification.postBody["excluded_segments"] = ["Banned Users"];
-        firstNotification.postBody["included_segments"] = ["Active Users"];
-
-        client.sendNotification(firstNotification)
-            .then(function (response) {
-                console.log(response.data, response.httpResponse.statusCode);
-            })
-            .catch(function (err) {
-                console.log('Something went wrong...', err);
-            });
-    });
-
-
+router.get('/messagedetails', function(req,res,next){
+    Messages.find().then(function(record,err){
+        if(record)
+            res.send(record);
+        else
+            res.send({message:"NO SUCH SEGMENT FOUND"})
+    })
 })
 
 module.exports = router;
