@@ -298,11 +298,13 @@ router.post('/time', function (req, res, next) {
                 en: req.body.message,
                 tr: "Test mesajı"
             },
-
+            filters: [
+                { field: "country", relation: "=", value: req.body.isocode }
+            ]
 
         });
-        firstNotification.postBody["excluded_segments"] = ["Banned Users"];
-        firstNotification.postBody["included_segments"] = ["Active Users"];
+        // firstNotification.postBody["excluded_segments"] = ["Banned Users"];
+        // firstNotification.postBody["included_segments"] = ["Active Users"];
 
         client.sendNotification(firstNotification)
             .then(function (response) {
