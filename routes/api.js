@@ -251,19 +251,19 @@ router.get('/messagedetails', function (req, res, next) {
 //@access   PUBLIC
 router.post('/time', function (req, res, next) {
     var region = req.body.region
-    var rdate = req.body.date
+    var rdate = req.body.rdate
     var ccode = req.body.ccode
     var message = req.body.message
 
     //var frontd = { region, rdate, ccode, message }
     //var test = moment(rdate).format("LT");
     //*************** */time is 0 to 12 am and 12 to 24 pm *****************
-    var country = moment.tz(rdate, "YYYY-MM-DD H:m", region);
+    var country = moment.tz(rdate, "YYYY/MM/DD HH:mm", region);
     var india = country.clone().tz("Asia/Kolkata");
     var indiaTime = india.format("LLL")
-    var country_time = country.format("YYYY-MM-DD H:m");
-    var current_india_time = moment().format("YYYY-MM-DD H:m")
-    var india_trigger_time = india.format("YYYY-MM-DD H:m")
+    var country_time = country.format("YYYY/MM/DD HH:mm");
+    var current_india_time = moment().format("YYYY/MM/DD HH:mm")
+    var india_trigger_time = india.format("YYYY/MM/DD HH:mm")
 
     var date = india.format('l');
     //Time splitting
