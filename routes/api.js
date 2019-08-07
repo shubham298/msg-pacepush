@@ -255,8 +255,7 @@ router.post('/time', function (req, res, next) {
     var ccode = req.body.ccode
     var message = req.body.message
 
-    var data = { region, date, ccode, message }
-    console.log(data);
+    var data2 = { region, date, ccode, message }
     //*************** */time is 0 to 12 am and 12 to 24 pm *****************
     var country = moment.tz("2019-08-6 21:34 PM", "YYYY-M-D H:m", region);
     var countryTime = country.format("LLL");
@@ -289,7 +288,7 @@ router.post('/time', function (req, res, next) {
     }
 
 
-    var data = { india, countryTime, triggerTime, yy, month, day, h, m, dn }
+    var data = { india, countryTime, triggerTime, yy, month, day, h, m, dn, data2 }
     res.send(data);
 
     //year ,month,day,hour,minute,second
