@@ -251,11 +251,11 @@ router.get('/messagedetails', function (req, res, next) {
 //@access   PUBLIC
 router.post('/time', function (req, res, next) {
     var region = req.body.region
-    var date = req.body.date
+    var rdate = req.body.date
     var ccode = req.body.ccode
     var message = req.body.message
 
-    var data2 = { region, date, ccode, message }
+    var data2 = { region, rdate, ccode, message }
     //*************** */time is 0 to 12 am and 12 to 24 pm *****************
     var country = moment.tz("2019-08-6 21:34 PM", "YYYY-M-D H:m", region);
     var countryTime = country.format("LLL");
@@ -289,21 +289,18 @@ router.post('/time', function (req, res, next) {
 
 
     var data = { india, countryTime, triggerTime, yy, month, day, h, m, dn, data2 }
-    res.send(data);
 
     //year ,month,day,hour,minute,second
     var date = new Date(yy, month - 1, day, h, m, dn);
 
     var j = schedule.scheduleJob(date, function () {
-        console.log('The world is going to end today.');
-
         var firstNotification = new OneSignal.Notification({
             contents: {
                 en: message,
                 tr: "Test mesajı"
             },
             filters: [
-                { field: "country", relation: "=", value: req.body.isocode }
+                { field: "country", relation: "=", value: req.body.ccode }
             ]
 
         });
@@ -318,6 +315,8 @@ router.post('/time', function (req, res, next) {
                 console.log('Something went wrong...', err);
             });
     });
+
+    res.send(data);
 
 
 })
