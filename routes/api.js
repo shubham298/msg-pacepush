@@ -255,13 +255,16 @@ router.post('/time', function (req, res, next) {
     var ccode = req.body.ccode
     var message = req.body.message
 
-    var frontd = { region, rdate, ccode, message }
-    var test = moment(rdate).format("YYYY-MM-DD" + " " + "LT");
+    //var frontd = { region, rdate, ccode, message }
+    //var test = moment(rdate).format("LT");
     //*************** */time is 0 to 12 am and 12 to 24 pm *****************
-    var country = moment.tz(test, "YYYY-MM-DD H:m", region);
-    var countryTime = country.format("LLL");
+    var country = moment.tz(rdate, "YYYY-MM-DD H:m", region);
     var india = country.clone().tz("Asia/Kolkata");
-    var triggerTime = india.format("LLL")
+    var indiaTime = india.format("LLL")
+    var country_time = country.format("YYYY-MM-DD H:m");
+    var current_india_time = moment().format("YYYY-MM-DD H:m")
+    var india_trigger_time = india.format("YYYY-MM-DD H:m")
+
     var date = india.format('l');
     //Time splitting
     var time = india.format('LT')
@@ -289,19 +292,23 @@ router.post('/time', function (req, res, next) {
     }
 
 
+    var data = { india, indiaTime, country_time, current_india_time, india_trigger_time }
+    res.send(data);
 
-    var data = { india, countryTime, triggerTime, yy, month, day, h, m, dn, frontd, test }
+
     //year ,month,day,hour,minute,second
     var date = new Date(yy, month - 1, day, h, m, dn);
 
     var j = schedule.scheduleJob(date, function () {
+
+        console.log("triggerd")
         var firstNotification = new OneSignal.Notification({
             contents: {
                 en: message,
                 tr: "Test mesajı"
             },
             filters: [
-                { field: "country", relation: "=", value: req.body.ccode }
+                { field: "country", relation: "=", value: ccode }
             ]
 
         });
@@ -317,7 +324,7 @@ router.post('/time', function (req, res, next) {
             });
     });
 
-    res.send(data);
+
 
 
 })
