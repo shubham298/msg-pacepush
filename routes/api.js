@@ -256,8 +256,9 @@ router.post('/time', function (req, res, next) {
     var message = req.body.message
 
     var frontd = { region, rdate, ccode, message }
+    var test = moment(rdate).format("YYYY-MM-DD" + " " + "LT");
     //*************** */time is 0 to 12 am and 12 to 24 pm *****************
-    var country = moment.tz("2019-08-6 21:34 PM", "YYYY-M-D H:m", region);
+    var country = moment.tz(test, "YYYY-MM-DD H:m", region);
     var countryTime = country.format("LLL");
     var india = country.clone().tz("Asia/Kolkata");
     var triggerTime = india.format("LLL")
@@ -288,8 +289,8 @@ router.post('/time', function (req, res, next) {
     }
 
 
-    //var data = { india, countryTime, triggerTime, yy, month, day, h, m, dn }
-    var data = { frontd }
+
+    var data = { india, countryTime, triggerTime, yy, month, day, h, m, dn, frontd, test }
     //year ,month,day,hour,minute,second
     var date = new Date(yy, month - 1, day, h, m, dn);
 
@@ -344,6 +345,7 @@ router.post("/addCountry",
     (req, res) => {
         const newCountry = new Country({
             country: req.body.country,
+            isocode: req.body.isocode
         })
         newCountry
             .save()
