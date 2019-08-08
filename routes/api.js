@@ -7,6 +7,7 @@ const Messages = require('../models/message')
 const Country = require('../models/country')
 let moment = require("moment-timezone");
 var schedule = require('node-schedule');
+const request = require('request');
 router.get('/', (req, res) => res.send('Hello World!'))
 //@type     POST
 //@route    /api/message
@@ -359,4 +360,23 @@ router.post("/addCountry",
             .then(question => res.json(question))
             .catch(err => console.log("unable to push question into the database " + err));
     })
+
+
+//@type     GET
+//@route    /api/viewdevices
+//@desc     route for get all the devices status
+//@access   PRIVATE
+router.get("/viewdevices", (req,res1) => {
+
+    console.log(client.app.appId)
+    request('https://onesignal.com/api/v1/players?app_id='+client.app.appId,{
+        headers: {'Content-type' : 'application/json',
+                    'Authorization' : 'Basic '+client.app.appAuthKey},
+       
+      }, (err, res, body) => {
+  if (err) { return console.log(err); }
+  console.log(body);
+res1.send(body)
+});
+})
 module.exports = router;
