@@ -326,7 +326,7 @@ router.post('/time', function (req, res, next) {
     });
     console.log(j)
     if (j == null) {
-        res.json({ "message": "cannot be send" })
+        res.json({ "message": false })
     } else {
         res.send(data)
     }
@@ -375,17 +375,19 @@ router.post("/addCountry",
 //@route    /api/viewdevices
 //@desc     route for get all the devices status
 //@access   PRIVATE
-router.get("/viewdevices", (req,res1) => {
+router.get("/viewdevices", (req, res1) => {
 
     console.log(client.app.appId)
-    request('https://onesignal.com/api/v1/players?app_id='+client.app.appId,{
-        headers: {'Content-type' : 'application/json',
-                    'Authorization' : 'Basic '+client.app.appAuthKey},
-       
-      }, (err, res, body) => {
-  if (err) { return console.log(err); }
-  console.log(body);
-res1.send(body)
-});
+    request('https://onesignal.com/api/v1/players?app_id=' + client.app.appId, {
+        headers: {
+            'Content-type': 'application/json',
+            'Authorization': 'Basic ' + client.app.appAuthKey
+        },
+
+    }, (err, res, body) => {
+        if (err) { return console.log(err); }
+        console.log(body);
+        res1.send(body)
+    });
 })
 module.exports = router;
