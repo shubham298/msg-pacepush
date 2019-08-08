@@ -263,7 +263,7 @@ router.post('/time', function (req, res, next) {
     var indiaTime = india.format("LLL")
     var country_time = country.format("YYYY/MM/DD HH:mm");
     var current_india_time = moment().format("YYYY/MM/DD HH:mm")
-    var india_trigger_time = india.format("YYYY/MM/DD HH:mm")
+    var trigger_time = india.format("YYYY/MM/DD HH:mm")
 
     var date = india.format('l');
     //Time splitting
@@ -292,8 +292,8 @@ router.post('/time', function (req, res, next) {
     }
 
 
-    var data = { india, indiaTime, country_time, current_india_time, india_trigger_time }
-    res.send(data);
+    var data = { india, indiaTime, current_india_time, country_time, trigger_time }
+
 
 
     //year ,month,day,hour,minute,second
@@ -323,7 +323,16 @@ router.post('/time', function (req, res, next) {
                 console.log('Something went wrong...', err);
             });
     });
+    console.log(j)
+    if (j == null) {
+        res.json({ "message": "cannot be send" })
+    } else {
+        res.send(data)
+    }
 
+    // if (j) {
+    //     res.send({ 'message': 'noooo' })
+    // }
 
 
 
