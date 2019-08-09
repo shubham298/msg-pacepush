@@ -3,7 +3,6 @@ const Schema = mongoose.Schema;
 
 const typeSchema = new Schema({
     field: String,
-    key: String,
     relation: String,
     value: String,
     operator: {

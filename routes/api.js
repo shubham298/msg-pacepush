@@ -330,13 +330,6 @@ router.post('/time', function (req, res, next) {
     } else {
         res.send(data)
     }
-
-    // if (j) {
-    //     res.send({ 'message': 'noooo' })
-    // }
-
-
-
 })
 
 //@type     GET
