@@ -19,13 +19,45 @@
     <script>
         var OneSignal = window.OneSignal || [];
         OneSignal.push(function () {
+            OneSignal.setDefaultNotificationUrl("https://pacewisdom.com");
+            OneSignal.setDefaultTitle("Pace Wisdom");
+            OneSignal.on('permissionPromptDisplay', function () {
+                console.log("The prompt displayed");
+            });
             OneSignal.init({
                 appId: "97d1c30b-7d65-4789-8fdd-108be348748a",
                 notifyButton: {
                     enable: true,
+                    size: "large",
+                },
+                promptOptions: {
+                    customlink: {
+                        enabled: true, /* Required to use the Custom Link */
+                        style: "button", /* Has value of 'button' or 'link' */
+                        size: "large", /* One of 'small', 'medium', or 'large' */
+                        color: {
+                            button: '#E12D30', /* Color of the button background if style = "button" */
+                            text: '#FFFFFF', /* Color of the prompt's text */
+                        },
+                        text: {
+                            subscribe: "Subscribe to push notifications", /* Prompt's text when not subscribed */
+                            unsubscribe: "Unsubscribe from push notifications", /* Prompt's text when subscribed */
+                            explanation: "Get updates from all sorts of things that matter to you", /* Optional text appearing before the prompt button */
+                        },
+                        unsubscribeEnabled: true, /* Controls whether the prompt is visible after subscription */
+                    }
+                },
+                persistNotification: true,
+
+                welcomeNotification: {
+                    title: "Pace Wisdom ~ shubham dogra",
+                    message: "Welcome to our Push notification.",
+                    url: "https://pacewisdom.com"
                 }
             });
+            //OneSignal.registerForPushNotifications();
             OneSignal.showNativePrompt();
+            OneSignal.showSlidedownPrompt();
         });
 
     </script>
@@ -33,113 +65,8 @@
 
 <body>
     <h2>Push Notification</h2>
-    <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Similique aliquam corrupti culpa hic fuga adipisci?
-        Culpa earum perferendis necessitatibus eaque obcaecati, sit dolorem labore ab deserunt praesentium illo debitis
-        minus!</p>
+    <div class='onesignal-customlink-container'></div>
 
-    <div id="mapid"></div>
-    <p><button onclick="geoFindMe()">Show my location</button></p>
-    <div id="out"></div>
-
-    <script>
-        const mymap = L.map('mapid').setView([13.05, 74.96], 9);
-        var marker = L.marker([0, 0]).addTo(mymap);
-        var popup = L.popup();
-
-
-        function onMapClick(e) {
-            popup
-                .setLatLng(e.latlng)
-                .setContent("You clicked the map at " + e.latlng.toString())
-                .openOn(mymap);
-            clat = e.latlng.lat;
-            clong = e.latlng.lng;
-            const loca = { clat, clong };
-            console.log(loca)
-            const options = {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(loca)
-            };
-            fetch('/api/location', options).then(Response => {
-                console.log(Response);
-            });
-
-
-            var circle = L.circle(e.latlng, {
-                color: 'red',
-                fillColor: '#f03',
-                fillOpacity: 0.5,
-                radius: 150000
-            }).addTo(mymap);
-
-
-            marker.setLatLng(e.latlng);
-
-        }
-
-        mymap.on('click', onMapClick);
-
-
-        const attribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        const tilesUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-        const tiles = L.tileLayer(tilesUrl, { attribution });
-        tiles.addTo(mymap);
-
-
-    </script>
-    <script>
-        var output = document.getElementById("out");
-        function geoFindMe() {
-            if (!navigator.geolocation) {
-                output.innerHTML = "<p>Geolocation is not supported by your browser</p>";
-                return;
-            }
-            output.innerHTML = "<p>Locating…</p>";
-            navigator.geolocation.getCurrentPosition(success, error);
-        }
-
-        function success(position) {
-            var latitude = position.coords.latitude;
-            var longitude = position.coords.longitude;
-            //L.marker([latitude, longitude]).addTo(mymap);
-            output.innerHTML = '<p>Latitude is ' + latitude + '° <br>Longitude is ' + longitude + '°</p>';
-
-            OneSignal.push(function () {
-                OneSignal.sendTags({
-                    lat: latitude,
-                    long: longitude
-                }).then(tagSent => {
-                    console.log(tagSent)
-                });
-            });
-
-
-            // //sending lan and long
-            // const data = { latitude, longitude };
-            // const options = {
-            //     method: 'POST',
-            //     headers: {
-            //         'Content-Type': 'application/json'
-            //     },
-            //     body: JSON.stringify(data)
-            // };
-            // fetch('/api/location', options).then(Response => {
-            //     console.log(Response);
-            // });
-
-            // var img = new Image();
-            // img.src = "https://maps.googleapis.com/maps/api/staticmap?center=" + latitude + "," + longitude + "&zoom=13&size=300x300&sensor=false";
-
-            output.appendChild(img);
-        }
-
-        function error() {
-            output.innerHTML = "Unable to retrieve your location";
-        }
-    </script>
 </body>
 
 </html>

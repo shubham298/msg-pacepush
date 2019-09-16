@@ -2,11 +2,11 @@ const express = require('express')
 var OneSignal = require('onesignal-node');
 var bodyparser = require('body-parser')
 const mongoose = require('mongoose');
-const port = process.env.PORT || 8000;
 const app = express()
-app.use(express.static(__dirname));
+const port = process.env.PORT || 8000;
 const routes = require('./routes/api')
 const db = "mongodb+srv://shubham:78784512@clusterpush-w5itz.mongodb.net/test?retryWrites=true&w=majority"
+app.use(express.static(__dirname));
 //Database connection
 mongoose
     .connect(db)

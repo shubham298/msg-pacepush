@@ -3,6 +3,7 @@ const router = express.Router();
 var OneSignal = require('onesignal-node');
 var client = require('../config.js')
 const Add = require('../models/segment')
+const Template = require('../models/template')
 const Messages = require('../models/message')
 const Country = require('../models/country')
 let moment = require("moment-timezone");
@@ -15,9 +16,6 @@ router.get('/', (req, res) => res.send('Hello World!'))
 //@access   PUBLIC
 router.post('/message', function (req, res) {
     //it save() and creates req.body
-
-
-
     // we need to create a notification to send      
     var firstNotification = new OneSignal.Notification({
         contents: {
@@ -147,7 +145,7 @@ router.post('/messagesegment', function (req, res, next) {
 
 //@type     POST
 //@route    /api/location
-//@desc     just for testing
+//@desc     trigger geo-location notification
 //@access   PUBLIC
 router.post('/location', function (req, res, next) {
     console.log(req.body)
@@ -170,7 +168,6 @@ router.post('/location', function (req, res, next) {
             tr: "Test mesajı"
         },
         filters: [
-
             { "field": "tag", "key": "long", "relation": ">", "value": longitude - radius },
             { "operator": "AND" },
             { "field": "tag", "key": "long", "relation": "<", "value": longitude + radius },
@@ -179,19 +176,6 @@ router.post('/location', function (req, res, next) {
             { "operator": "AND" },
             { "field": "tag", "key": "lat", "relation": "<", "value": latitude + radius }
         ]
-        // { "operator": "OR" },
-        // { "field": "tag", "key": "long", "relation": "<", "value": 100 },
-        //{ "field": "tag", "key": "lat", "relation": ">", "value": latitude },
-        // { "operator": "OR" },
-        // { "field": "tag", "key": "lat", "relation": "<", "value": 100 },
-        // // { "operator": "OR" },
-        //     { "field": "tag", "key": "banned", "relation": "!=", "value": "true" },
-        // { "operator": "OR" }, { "field": "tag", "key": "is_admin", "relation": "=", "value": "true" },
-        // { field: "location", lat: 13, long: 74, radius: "1000000", }
-        //{ field: "session_count", "relation":">","value":1 }
-        // { "field": "tag", "key": "radius", "relation": "=", "value": "100000" },
-
-
     });
 
 
@@ -313,8 +297,6 @@ router.post('/time', function (req, res, next) {
             ]
 
         });
-        // firstNotification.postBody["excluded_segments"] = ["Banned Users"];
-        // firstNotification.postBody["included_segments"] = ["Active Users"];
 
         client.sendNotification(firstNotification)
             .then(function (response) {
@@ -349,7 +331,7 @@ router.get('/countrydetails', function (req, res, next) {
 
 //@type     POST
 //@route    /api/addCountry
-//@desc     route for submitting question
+//@desc     route for adding country
 //@access   PRIVATE
 router.post("/addCountry",
     (req, res) => {
@@ -383,4 +365,102 @@ router.get("/viewdevices", (req, res1) => {
         res1.send(body)
     });
 })
+
+
+//@type     POST
+//@route    /api/addtemplate
+//@desc     route for adding template
+//@access   PRIVATE
+router.post("/addtemplate",
+    (req, res) => {
+        const tvalues = {}
+        tvalues.tdata = {}
+        if (typeof req.body.user_array !== undefined) {
+            tvalues.user_array = req.body.user_array.split(",");
+        }
+        tvalues.tempname = req.body.tempname;
+        tvalues.tdata.title = req.body.title;
+        tvalues.tdata.usertype = req.body.usertype;
+        tvalues.tdata.web_image = req.body.web_image;
+        tvalues.tdata.tmessage = req.body.tmessage;
+        console.log(tvalues)
+        Template.findOne({ tempname: tvalues.tempname })
+            .then(profile => {
+                //Username already exists
+                if (profile) {
+                    res.status(400).json({ Template: 'Templatename already exists' })
+                }
+                //save user
+                new Template(tvalues)
+                    .save()
+                    .then(template => res.send(template))
+                    .catch(err => console.log("unable to push template into the database " + err));
+
+            })
+
+    })
+
+
+
+//@type     GET
+//@route    /api/templatedetail
+//@desc     view all the messages sent
+//@access   PUBLIC
+
+router.get('/templatedetail', function (req, res, next) {
+    Template.find().then(function (record, err) {
+        if (record)
+            res.send(record);
+        else
+            res.send({ message: "NO SUCH SEGMENT FOUND" })
+    })
+})
+
+//@type     POST
+//@route    /api/template
+//@desc     sending template notification
+//@access   PUBLIC
+router.post('/template', function (req, res) {
+    //it save() and creates req.body
+    // we need to create a notification to send 
+    if (!req.body.usertype) { res.send("Please Enter user type") }
+    if (!req.body.title) { res.send("Please Enter template title") }
+    if (!req.body.web_image) { res.send("Please Enter web_image") }
+    if (!req.body.tmessage) { res.send("Please  Enter tmessage") }
+    var firstNotification = new OneSignal.Notification({
+        contents: {
+            en: req.body.tmessage,
+        },
+
+        headings: { "en": req.body.title },
+
+        chrome_web_icon: "https://s3.amazonaws.com/myamcatimages/company/images/12365.png",
+
+        included_segments: [req.body.usertype],
+
+        chrome_web_image: req.body.web_image,
+
+        web_buttons: [
+            {
+                "id": "like-button", "text": "Like", "icon": "http://i.imgur.com/N8SN8ZS.png", "url": "https://pacewisdom.com"
+            },
+            {
+                "id": "read-more-button", "text": "Read more", "icon": "http://i.imgur.com/    MIxJp1L.png", "url": "https://www.accuweather.com/en/in/india-weather"
+            }]
+    });
+    // firstNotification.postBody["excluded_segments"] = ["Banned Users"];
+    // firstNotification.postBody["included_segments"] = ["Active Users"];
+    res.json("successfull ")
+    client.sendNotification(firstNotification)
+        .then(function (response) {
+            console.log(response.data, response.httpResponse.statusCode);
+
+        })
+        .catch(function (err) {
+            console.log('Something went wrong...', err);
+        });
+
+})
+
+
 module.exports = router;
