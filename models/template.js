@@ -5,25 +5,23 @@ const Schema = mongoose.Schema;
 
 
 const templateSchema = new Schema({
+
     card: [{
-        name: {
-            type: String
+        card_name: {
+            type: String,
         },
-        card_array: [{
-            cardtitle: {
-                type: String,
-            },
-            enduser: {
-                type: String,
-            },
-            photo: {
-                type: String,
-            },
-            message: {
-                type: String,
-            }
-        },]
-    },]
+        user_type: {
+            type: String,
+        },
+        card_photo: {
+            type: String,
+        },
+        card_message: {
+            type: String,
+        }
+    }],
+
+
 })
 
 const temp = mongoose.model('Template', templateSchema);

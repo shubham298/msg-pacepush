@@ -4,7 +4,7 @@ var OneSignal = require('onesignal-node');
 var client = require('../config.js')
 const Add = require('../models/segment')
 const Template = require('../models/template')
-const temparr = require('../models/temparr')
+
 const Messages = require('../models/message')
 const Country = require('../models/country')
 let moment = require("moment-timezone");
@@ -395,28 +395,24 @@ router.get("/viewdevices", (req, res1) => {
 
 
 //@type     POST
-//@route    /api/card
+//@route    /api/addcard
 //@desc     route for creating the first card
 //@access   PRIVATE
 router.post("/addcard",
     (req, res) => {
         const newCard = {
-            cardtitle: req.body.cardtitle,
-            enduser: req.body.enduser,
-            photo: req.body.photo,
-            message: req.body.message,
+            card_name: req.body.card_name,
+            user_type: req.body.user_type,
+            card_photo: req.body.card_photo,
+            card_message: req.body.card_message,
         };
-        const final = {
-            name: req.body.name,
-            card_array: newCard,
-        }
+
 
         const newTemp = new Template({
-            id: req.body.id,
 
         })
-        newTemp.card.unshift(final);
-        // newTemp.card.unshift(newCard)
+        newTemp.card.unshift(newCard);
+
         newTemp
             .save()
             .then(question => res.json(question))
@@ -432,18 +428,18 @@ router.post("/addcard",
 router.post("/card_details",
     (req, res) => {
         const newCard = {
-            cardtitle: req.body.cardtitle,
-            enduser: req.body.enduser,
-            photo: req.body.photo,
-            message: req.body.message,
-        };
-        var obTemplate = {
-            name: req.body.name,
-            card_array: newCard,
+            card_name: req.body.card_name,
+            user_type: req.body.user_type,
+            card_photo: req.body.card_photo,
+            card_message: req.body.card_message,
         };
         Template.findOneAndUpdate(
             { _id: req.body.id },
-            { $push: { card: obTemplate } },
+            {
+                $push: {
+                    card: newCard,
+                }
+            },
             function (error, success) {
                 if (error) {
                     console.log(error);
