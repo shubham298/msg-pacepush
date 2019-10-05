@@ -4,29 +4,28 @@ const Schema = mongoose.Schema;
 
 
 
-const addSchema = new Schema({
-    tempname: {
-        type: String
-    },
-    user_array: {
-        type: [String],
-    },
-    tdata: {
-        title: {
-            type: String,
+const templateSchema = new Schema({
+    card: [{
+        name: {
+            type: String
         },
-        usertype: {
-            type: String,
-        },
-        web_image: {
-            type: String,
-        },
-        tmessage: {
-            type: String,
-        }
-    }
+        card_array: [{
+            cardtitle: {
+                type: String,
+            },
+            enduser: {
+                type: String,
+            },
+            photo: {
+                type: String,
+            },
+            message: {
+                type: String,
+            }
+        },]
+    },]
 })
 
-const temp = mongoose.model('Template', addSchema);
+const temp = mongoose.model('Template', templateSchema);
 
 module.exports = temp;

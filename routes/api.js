@@ -4,6 +4,7 @@ var OneSignal = require('onesignal-node');
 var client = require('../config.js')
 const Add = require('../models/segment')
 const Template = require('../models/template')
+const temparr = require('../models/temparr')
 const Messages = require('../models/message')
 const Country = require('../models/country')
 let moment = require("moment-timezone");
@@ -167,6 +168,18 @@ router.post('/location', function (req, res, next) {
             en: msg,
             tr: "Test mesajı"
         },
+        headings: { "en": "Geo-location notification" },
+
+        chrome_web_icon: "https://s3.amazonaws.com/myamcatimages/company/images/12365.png",
+
+
+        web_buttons: [
+            {
+                "id": "like-button", "text": "Like", "icon": "http://i.imgur.com/N8SN8ZS.png", "url": "https://pacewisdom.com"
+            },
+            {
+                "id": "read-more-button", "text": "Read more", "icon": "http://i.imgur.com/    MIxJp1L.png", "url": "https://www.accuweather.com/en/in/india-weather"
+            }],
         filters: [
             { "field": "tag", "key": "long", "relation": ">", "value": longitude - radius },
             { "operator": "AND" },
@@ -174,7 +187,8 @@ router.post('/location', function (req, res, next) {
             { "operator": "AND" },
             { "field": "tag", "key": "lat", "relation": ">", "value": latitude - radius },
             { "operator": "AND" },
-            { "field": "tag", "key": "lat", "relation": "<", "value": latitude + radius }
+            { "field": "tag", "key": "lat", "relation": "<", "value": latitude + radius },
+            // { field: "location", lat: 13, long: 74, radius: "100000000", }
         ]
     });
 
@@ -277,7 +291,7 @@ router.post('/time', function (req, res, next) {
     }
 
 
-    var data = { india, indiaTime, current_india_time, country_time, trigger_time }
+    var data = { country, india, indiaTime, current_india_time, country_time, trigger_time, date, timearr, h, m }
 
 
 
@@ -292,6 +306,19 @@ router.post('/time', function (req, res, next) {
                 en: message,
                 tr: "Test mesajı"
             },
+            headings: { "en": "Time Based notification" },
+
+            chrome_web_icon: "https://s3.amazonaws.com/myamcatimages/company/images/12365.png",
+
+
+
+            web_buttons: [
+                {
+                    "id": "like-button", "text": "Like", "icon": "http://i.imgur.com/N8SN8ZS.png", "url": "https://pacewisdom.com"
+                },
+                {
+                    "id": "read-more-button", "text": "Read more", "icon": "http://i.imgur.com/    MIxJp1L.png", "url": "https://www.accuweather.com/en/in/india-weather"
+                }],
             filters: [
                 { field: "country", relation: "=", value: ccode }
             ]
@@ -368,39 +395,64 @@ router.get("/viewdevices", (req, res1) => {
 
 
 //@type     POST
-//@route    /api/addtemplate
-//@desc     route for adding template
+//@route    /api/card
+//@desc     route for creating the first card
 //@access   PRIVATE
-router.post("/addtemplate",
+router.post("/addcard",
     (req, res) => {
-        const tvalues = {}
-        tvalues.tdata = {}
-        if (typeof req.body.user_array !== undefined) {
-            tvalues.user_array = req.body.user_array.split(",");
+        const newCard = {
+            cardtitle: req.body.cardtitle,
+            enduser: req.body.enduser,
+            photo: req.body.photo,
+            message: req.body.message,
+        };
+        const final = {
+            name: req.body.name,
+            card_array: newCard,
         }
-        tvalues.tempname = req.body.tempname;
-        tvalues.tdata.title = req.body.title;
-        tvalues.tdata.usertype = req.body.usertype;
-        tvalues.tdata.web_image = req.body.web_image;
-        tvalues.tdata.tmessage = req.body.tmessage;
-        console.log(tvalues)
-        Template.findOne({ tempname: tvalues.tempname })
-            .then(profile => {
-                //Username already exists
-                if (profile) {
-                    res.status(400).json({ Template: 'Templatename already exists' })
-                }
-                //save user
-                new Template(tvalues)
-                    .save()
-                    .then(template => res.send(template))
-                    .catch(err => console.log("unable to push template into the database " + err));
 
-            })
+        const newTemp = new Template({
+            id: req.body.id,
 
+        })
+        newTemp.card.unshift(final);
+        // newTemp.card.unshift(newCard)
+        newTemp
+            .save()
+            .then(question => res.json(question))
+            .catch(err => console.log("unable to push card into the database " + err));
     })
 
 
+
+//@type     POST
+//@route    /api/card_details
+//@desc     appending the card details by taking id of first card created by /api/card route
+//@access   PRIVATE
+router.post("/card_details",
+    (req, res) => {
+        const newCard = {
+            cardtitle: req.body.cardtitle,
+            enduser: req.body.enduser,
+            photo: req.body.photo,
+            message: req.body.message,
+        };
+        var obTemplate = {
+            name: req.body.name,
+            card_array: newCard,
+        };
+        Template.findOneAndUpdate(
+            { _id: req.body.id },
+            { $push: { card: obTemplate } },
+            function (error, success) {
+                if (error) {
+                    console.log(error);
+                } else {
+                    res.send(success)
+                }
+            });
+
+    })
 
 //@type     GET
 //@route    /api/templatedetail
