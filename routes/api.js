@@ -472,22 +472,22 @@ router.get('/templatedetail/:id', function (req, res, next) {
 router.post('/template', function (req, res) {
     //it save() and creates req.body
     // we need to create a notification to send 
-    if (!req.body.usertype) { res.send("Please Enter user type") }
-    if (!req.body.title) { res.send("Please Enter template title") }
-    if (!req.body.web_image) { res.send("Please Enter web_image") }
-    if (!req.body.tmessage) { res.send("Please  Enter tmessage") }
+    if (!req.body.user_type) { res.send("Please Enter user user_type") }
+    if (!req.body.card_name) { res.send("Please Enter template card_name") }
+    if (!req.body.card_photo) { res.send("Please Enter card_photo") }
+    if (!req.body.card_message) { res.send("Please  Enter message") }
     var firstNotification = new OneSignal.Notification({
         contents: {
-            en: req.body.tmessage,
+            en: req.body.card_message,
         },
 
-        headings: { "en": req.body.title },
+        headings: { "en": req.body.card_name },
 
         chrome_web_icon: "https://s3.amazonaws.com/myamcatimages/company/images/12365.png",
 
-        included_segments: [req.body.usertype],
+        included_segments: [req.body.user_type],
 
-        chrome_web_image: req.body.web_image,
+        chrome_web_image: req.body.card_photo,
 
         web_buttons: [
             {
