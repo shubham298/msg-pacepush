@@ -499,7 +499,7 @@ router.post('/template', function (req, res) {
     });
     // firstNotification.postBody["excluded_segments"] = ["Banned Users"];
     // firstNotification.postBody["included_segments"] = ["Active Users"];
-    res.json("successfull ")
+    res.json({ "success": true })
     client.sendNotification(firstNotification)
         .then(function (response) {
             console.log(response.data, response.httpResponse.statusCode);
