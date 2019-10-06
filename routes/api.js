@@ -455,12 +455,13 @@ router.post("/card_details",
 //@desc     view all the messages sent
 //@access   PUBLIC
 
-router.get('/templatedetail', function (req, res, next) {
-    Template.find().then(function (record, err) {
-        if (record)
-            res.send(record);
-        else
-            res.send({ message: "NO SUCH SEGMENT FOUND" })
+router.get('/templatedetail/:id', function (req, res, next) {
+    Template.findOne({ _id: req.params.id }).then(function (profile, err) {
+        if (!profile) {
+            res.status(404).json({ cardnotfound: "card not found" })
+            console.log(req.params.id)
+        }
+        res.json(profile);
     })
 })
 
