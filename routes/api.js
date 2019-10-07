@@ -154,7 +154,7 @@ router.post('/location', function (req, res, next) {
     var latitude = req.body.lat
     var longitude = req.body.lng
     var msg = req.body.message
-    var radius = req.body.radius / 111
+    var radius = (req.body.radius / 111)
     console.log(latitude + radius)
     console.log(latitude - radius)
     console.log(longitude + radius)
@@ -169,7 +169,6 @@ router.post('/location', function (req, res, next) {
             tr: "Test mesajı"
         },
         headings: { "en": "Geo-location notification" },
-
         chrome_web_icon: "https://s3.amazonaws.com/myamcatimages/company/images/12365.png",
 
 
@@ -287,11 +286,10 @@ router.post('/time', function (req, res, next) {
 
     if (timearr[1] == "PM" && h < 12 && dn == 1) {
         h += 12;
-        console.log(h)
     }
 
 
-    var data = { country, india, indiaTime, current_india_time, country_time, trigger_time, date, timearr, h, m }
+    var data = { country, india, indiaTime, current_india_time, country_time, trigger_time, date, }
 
 
 
@@ -304,7 +302,7 @@ router.post('/time', function (req, res, next) {
         var firstNotification = new OneSignal.Notification({
             contents: {
                 en: message,
-                tr: "Test mesajı"
+
             },
             headings: { "en": "Time Based notification" },
 
@@ -333,7 +331,6 @@ router.post('/time', function (req, res, next) {
                 console.log('Something went wrong...', err);
             });
     });
-    console.log(j)
     if (j == null) {
         res.json({ "message": false })
     } else {

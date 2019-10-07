@@ -23,7 +23,9 @@
             OneSignal.setDefaultTitle("Pace Wisdom");
             OneSignal.on('permissionPromptDisplay', function () {
                 console.log("The prompt displayed");
+
             });
+
             OneSignal.init({
                 appId: "97d1c30b-7d65-4789-8fdd-108be348748a",
                 notifyButton: {
@@ -50,7 +52,7 @@
                 persistNotification: true,
 
                 welcomeNotification: {
-                    title: "Pace Wisdom ~ shubham dogra",
+                    title: "Pace Wisdom Interns~  Anusha kr,GM MUFEED , Milind , Shubham ",
                     message: "Welcome to our Push notification.",
                     url: "https://pacewisdom.com"
                 }
@@ -58,6 +60,7 @@
             //OneSignal.registerForPushNotifications();
             OneSignal.showNativePrompt();
             OneSignal.showSlidedownPrompt();
+
         });
 
     </script>
@@ -66,7 +69,44 @@
 <body>
     <h2>Push Notification</h2>
     <div class='onesignal-customlink-container'></div>
+    <p><button onclick="geoFindMe()"
+            style="background-color: brown;color:white;font-size: x-large;float:left;margin-top:4%;">subscribe
+            to geo location</button></p>
+    <div id="out" style="margin-top:5%"></div>
+    <script>
+        var output = document.getElementById("out");
+        function geoFindMe() {
+            if (!navigator.geolocation) {
+                output.innerHTML = "<p>Geolocation is not supported by your browser</p>";
+                return;
+            }
+            output.innerHTML = "<p>Locating…</p>";
+            navigator.geolocation.getCurrentPosition(success, error);
+        }
 
+        function success(position) {
+            var latitude = position.coords.latitude;
+            var longitude = position.coords.longitude;
+            //L.marker([latitude, longitude]).addTo(mymap);
+            output.innerHTML = '<p>Latitude is ' + latitude + '° <br>Longitude is ' + longitude + '°</p>';
+
+            OneSignal.push(function () {
+                OneSignal.sendTags({
+                    lat: latitude,
+                    long: longitude
+                }).then(tagSent => {
+                    console.log(tagSent)
+                });
+            });
+
+
+
+        }
+
+        function error() {
+            output.innerHTML = "Unable to retrieve your location";
+        }
+    </script>
 </body>
 
 </html>
